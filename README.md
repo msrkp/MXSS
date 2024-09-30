@@ -360,9 +360,14 @@ Since `<h>` tags (e.g., `<h1>`, `<h6>`) cannot be nested, they are separated and
 
 ### Incorrect serialization of at-rules in CSS can lead to CSS injection - Google CTF by SecurityMB
 
-Chromium serialization of CSS (using the cssText property on CSS rules) doesn't escape names of certain at-rules, such as @keyframes or @layer.Consider the following keyframes rule:@keyframes abc\{\} {}
-After getting the cssText of the rule, the rule is serialized to:@keyframes abc{} {}
+Chromium serialization of CSS (using the cssText property on CSS rules) doesn't escape names of certain at-rules, such as `@keyframes` or `@layer`. Consider the following keyframes rule:
+```@keyframes abc\{\} {}```
+After getting the cssText of the rule, the rule is serialized to:
+```@keyframes abc{} {}```
 
+Links:
+https://issues.chromium.org/issues/343000522
+https://github.com/google/google-ctf/tree/main/2024/quals/web-in-the-shadows#intended-solution
 
 ###  3.1.0 DOMPurify Bypass with nesting by icesfont
 

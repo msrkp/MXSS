@@ -258,7 +258,7 @@ Other variant:
 
 Description: DOMPurify removes certain tags but preserves the content inside them, which can be exploited for Mutation XSS (MXSS) through namespace switching. For example, the style tag resides inside the HTML namespace within a foreignObject element. DOMPurify removes the foreignObject tag but retains its content, causing the remaining content to switch to the SVG namespace. As a result, the malicious content that was initially safe in the HTML namespace now becomes executable as SVG tags, leading to the execution of the payload. This exploit leverages the way DOMPurify handles tag removal without completely removing the content inside. 
 
-Similar variation to Securitymb <svg></p> but use a tag which gets removed by DOMpurify inbetween them like <svg><foreignobject><p> <- valid dom but after sanitization it turns <svg><p> <- not valid dom, so <p> kicks out
+Similar variation to Securitymb <svg></p> but use a tag which gets removed by DOMpurify inbetween them like `<svg><foreignobject><p>` <- valid dom but after sanitization it turns `<svg><p>` <- not valid dom, so <p> kicks out
 
 So, when content is not ignored and inserted to body, mxss can happen with below payloads
 
@@ -315,13 +315,15 @@ DOMPurify.sanitize(`<svg><annotation-xml><foreignobject><style><!--</style><p id
 **Description:**
 - The <annotation-xml> element is treated as a custom element due to the permissive custom element regex (tagNameCheck: /.*/). With FORBID_CONTENTS set to an empty array, both <annotation-xml> and <foreignobject> within the <svg> are considered valid and aren't removed by the namespace checks. However, DOMPurify later removes <foreignobject>, leaving its contents to be re-assigned as children of <annotation-xml> due forbid_contents set to empty. As a result, the <style> tag (which normally belongs to the HTML namespace) is now nested inside the SVG's <annotation-xml>, allowing it to be treated as SVG content.
 
+
+
 ### SVG to HTML switch:  Daniel Santos @bananabr
 **Description:**
 - Another variation of the SecurityMB exploit involves a different switch, converting the style tag from the SVG namespace into the HTML namespace. This version uses two mtext elements, with the second mtext ensuring that the payload to stay in the HTML namespace for first parsing *<mtext><style><x id="&lt;/style><img onerror=alert(1) src>">.*
 - During the second parsing, when the form is removed, elements mtext > mglyph > svg > mtext will all be within the MathML namespace as mglyph child will be mathml until html namespace element comes. And the second mtext, the style tag transitions back into the HTML namespace, allowing the malicious code within the style tag to execute.
 
 
-**Payload:* 
+**Payload:** 
 ```html
 <form><math><mtext></form><form><mglyph><svg><mtext><style><x id="&lt;/style><img onerror=alert(1) src>">
 ```
@@ -345,14 +347,14 @@ DOMPurify.sanitize(`<svg><annotation-xml><foreignobject><style><!--</style><p id
 **Description**: Since <a> tags cannot be nested, they are initially treated together but later become sibling elements. The second <a> tag brings subsequent <mglyph> elements as children of <mtext>. As a result, <mtext> initially inside a <style> tag is reinterpreted as MathML <mtext> because it becomes a child of an SVG's <mglyph>.
 
 
-### By Max Garrett?
+### By someone
 **Switch: SVG style to HTML**
 *Payload:*
 ```html
  <math><mtext><h1><a><h6></a></h6><mglyph><svg><mtext><style><a title="</style><img src onerror='alert(1)'>"></style>
 ```
-*Description:*
-Since <h> tags (e.g., <h1>, <h6>) cannot be nested, they are separated and become sibling elements. In the first parse (P(D)), <mtext> is nested within an SVG, but in the second parse (P(P(D))), a mutation occurs where <mglyph> becomes a direct child of <mtext> (top). This causes the <mtext> (bottom), initially in SVG in P(D), to be reinterpreted as a MathML <mtext> in P(P(D)).
+**Description:**
+Since `<h>` tags (e.g., `<h1>`, `<h6>`) cannot be nested, they are separated and become sibling elements. In the first parse (P(D)), `<mtext>` is nested within an SVG, but in the second parse (P(P(D))), a mutation occurs where `<mglyph>` becomes a direct child of `<mtext>` (top). This causes the `<mtext>` (bottom), initially in SVG in P(D), to be reinterpreted as a MathML `<mtext>` in P(P(D)).
 
 
 
@@ -372,7 +374,7 @@ TBD  after the part 1 video will update, this is banger of a bug
 
 #### Some miscellaneous brainstorming
 XMLSerializer.serializeToString(), like Google Closure lib or do a similar processing. ? Is it safe?
-Note: insertAdjacentHTML is fragment parsing mode, for instance <svg><p> is allowed in fragment parsing mode but not document parsing mode, so if its parsed in fragment first then innerhtml u can mxss using initial securitymb <svg></p><style><a id=”</style><img>”>
+Note: insertAdjacentHTML is fragment parsing mode, for instance <svg><p> is allowed in fragment parsing mode but not document parsing mode, so if its parsed in fragment first then innerhtml u can mxss using initial securitymb `<svg></p><style><a id=”</style><img>”>`
 
 Copypaste sanitizer mxss
 https://bugs.chromium.org/p/chromium/issues/detail?id=1011950
